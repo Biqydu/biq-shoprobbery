@@ -7,99 +7,67 @@ end
 local lastRobberyTimeCashReg = -Config.CooldownCashRegister * 60 * 1000
 local lastRobberyTimeSafe = -Config.CooldownSafe * 60 * 1000
 
-RegisterCommand('ttest', function()
-  local currentTime = GetGameTimer()
-  local lastRobberyTime = lastRobberyTimeCashReg
-  
-  local cooldownTime = Config.CooldownCashRegister * 60 * 1000
-  
-  -- Debugowanie obliczeń
-  print("Cooldown time (in ms): " .. cooldownTime)
-  print("Current time: " .. currentTime)
-  print("Last robbery time: " .. lastRobberyTime)
-  print("Time difference: " .. (currentTime - lastRobberyTime))
-  print("Cooldown check: " .. tostring((currentTime - lastRobberyTime >= cooldownTime)))
-  
-end, false)
+lib.locale(Config.Language or 'en')
+
 
 local function RobCashRegister()
     local currentTime = GetGameTimer()
-  
-    if Config.RequiredItems.cashRegister.weapon and Config.RequiredItems.cashRegister.weapon ~= "" then
-      local selectedWeapon = GetSelectedPedWeapon(cache.ped)
-      local requiredWeaponHash = joaat(Config.RequiredItems.cashRegister.weapon) 
-  
-      if selectedWeapon ~= requiredWeaponHash then
-          Notify('', 'You do not have the required weapon in your hand!', 'error')
-          return
-      end
+
+    if tonumber(Config.RequiredPoliceCount) and Config.RequiredPoliceCount > 0 then
+        local policeCount = lib.callback.await('biq-shoprobbery:server:checkPoliceCount', false)
+        if policeCount < Config.RequiredPoliceCount then
+            Notify('', locale('not_enough_police', Config.RequiredPoliceCount), 'error')
+            return
+        end
     end
+    
   
-    -- Sprawdzanie wymaganych przedmiotów
     if not HasRequiredItems('cashRegister') then
-      Notify('', 'You do not have the required item to rob this cash register!', 'error')
+      Notify('', locale('not_have_required_item'), 'error')
       return
     end
   
-    -- Sprawdzanie cooldownu
     if currentTime - lastRobberyTimeCashReg < Config.CooldownCashRegister * 60 * 1000 then
-        Notify('', 'This cash register was recently robbed, you must wait to be robbed again', 'error')
+        Notify('', locale('recently_robbed'), 'error')
         return
     end
   
     if Config.MinigameCashRegister and not Config.MinigameCashRegister() then return end
     if not Progress(Config.Progressbars.cashRegister.time, Config.Progressbars.cashRegister.label, Config.Progressbars.cashRegister.anim) then return end
-  
-    local playerCoords = GetEntityCoords(cache.ped)
-    local isNearCashRegister = false
-  
-    for _, cashRegister in ipairs(Config.CashRegister) do
-        if #(playerCoords - cashRegister) < 6 then
-            isNearCashRegister = true
-            lastRobberyTimeCashReg = currentTime
-            TriggerServerEvent('biq-shoprobbery:server:giveRewardFromCashRegister') 
-            break
-        end
-    end
-  
-    if not isNearCashRegister then
-        TriggerServerEvent('biq-shoprobbery:server:cheaterDetected')
-    end
+
+    lastRobberyTimeCashReg = GetGameTimer()
+
+    TriggerServerEvent('biq-shoprobbery:server:giveRewardFromCashRegister')
   end
   
 
 local function RobSafe()
   local currentTime = GetGameTimer()
 
+if Config.RequiredPoliceCount and Config.RequiredPoliceCount > 0 then
+    local policeCount = lib.callback.await('biq-shoprobbery:server:checkPoliceCount', false)
+    if policeCount < Config.RequiredPoliceCount then
+        Notify('', locale('not_enough_police', Config.RequiredPoliceCount), 'error')
+        return
+    end
+end
+
   if not HasRequiredItems('safe') then
-    Notify('', 'You do not have the required item to rob the safe!', 'error')
+    Notify('', locale('not_have_required_item'), 'error')
     return
   end
 
   if currentTime - lastRobberyTimeSafe < Config.CooldownSafe * 60 * 1000 then
-      Notify('', 'This safe was recently robbed, you must wait to be robbed again', 'error')
+      Notify('', locale('recently_robbed'), 'error')
       return
   end
 
   if Config.MinigameSafe and not Config.MinigameSafe() then return end
   if not Progress(Config.Progressbars.safe.time, Config.Progressbars.safe.label, Config.Progressbars.safe.anim) then return end
 
-  local playerCoords = GetEntityCoords(cache.ped)
-  local isNearSafe = false
+  lastRobberyTimeSafe = GetGameTimer()
 
-  for _, safe in ipairs(Config.Safes) do
-      if #(playerCoords - safe) < 6 then
-          isNearSafe = true
-          lastRobberyTimeSafe = currentTime  -- Aktualizujemy czas rabunku
-          TriggerServerEvent('biq-shoprobbery:server:giveRewardFromSafe', Config.Reward.safe.min, Config.Reward.safe.max)
-          break
-      end
-  end
-
-  -- Jeśli gracz nie jest blisko sejfu
-  if not isNearSafe then
-      TriggerServerEvent('biq-shoprobbery:server:cheaterDetected')
-  end
+  TriggerServerEvent('biq-shoprobbery:server:giveRewardFromSafe')
 end
 
 
@@ -118,6 +86,16 @@ local function CreateRobTargets()
                       debug('biq-shoprobbery:robCashRegister:' .. _)
                       RobCashRegister()
                   end,
+                  canInteract = function()
+                    if Config.RequiredItems.cashRegister.weapon and Config.RequiredItems.cashRegister.weapon ~= "" then
+                        local selectedWeapon = GetSelectedPedWeapon(cache.ped)
+                        local requiredWeaponHash = joaat(Config.RequiredItems.cashRegister.weapon) 
+                        
+                        return selectedWeapon == requiredWeaponHash
+                    end
+                    
+                    return true
+                end                
               }
           }
       })
@@ -137,6 +115,16 @@ local function CreateRobTargets()
                       debug('biq-shoprobbery:crackSafe:' .. _)
                       RobSafe()
                   end,
+                  canInteract = function()
+                    if Config.RequiredItems.safe.weapon and Config.RequiredItems.safe.weapon ~= "" then
+                        local selectedWeapon = GetSelectedPedWeapon(cache.ped)
+                        local requiredWeaponHash = joaat(Config.RequiredItems.safe.weapon) 
+                        
+                        return selectedWeapon == requiredWeaponHash
+                    end
+                    
+                    return true
+                end    
               }
           }
       })
@@ -148,6 +136,3 @@ AddEventHandler('onResourceStart', function(resourceName)
   CreateRobTargets()
 end)
 
-AddEventHandler('onResourceStop', function(resourceName)
-  if (GetCurrentResourceName() ~= resourceName) then return end
-end)

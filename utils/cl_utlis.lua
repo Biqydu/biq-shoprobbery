@@ -3,6 +3,11 @@ if Config.Framework == 'qb' then
   elseif Config.Framework == 'esx' then 
     ESX = exports['es_extended']:getSharedObject()
   end
+
+  function debug(msg)
+    if Config.Debug then print('^3[DEBUG]^7', msg) end
+  end
+
   
   ---@param duration number # length of progress
   ---@param label string # progress text
@@ -139,42 +144,13 @@ if Config.Framework == 'qb' then
           return count > 0
       end
   end
-  
-  
-  function SpawnPed(model, coords)
-      lib.requestModel(model)
-      local ped = CreatePed(1, joaat(model), coords.xyz, coords.w, true, false)
-      SetModelAsNoLongerNeeded(joaat(model))
-      FreezeEntityPosition(ped, true)
-      SetBlockingOfNonTemporaryEvents(ped, true)
-      SetEntityInvincible(ped, true)
-  
-      return ped
-  end
-  
-  
-  function CreateBlip(coords, name, icon, color, scale, shortRange)
-      local blip = AddBlipForCoord(coords.x, coords.y, coords.z)
-      SetBlipSprite(blip, icon)
-      SetBlipScale(blip, scale or 0.8)
-      SetBlipColour(blip, color or 0)
-      SetBlipAsShortRange(blip, shortRange or true)
-  
-      BeginTextCommandSetBlipName("STRING")
-      AddTextComponentString(name or "Blip")
-      EndTextCommandSetBlipName(blip)
-  
-      return blip
-  end
 
   function HasRequiredItems(robType)
     local requiredConfig = Config.RequiredItems[robType]
-    -- If no required items are specified, skip checks
     if not requiredConfig or not requiredConfig.item or requiredConfig == false then
         return true
     end
 
-    -- Return true if the player has at least one of the required items
     for _, itemName in ipairs(requiredConfig.item) do
         if HasItem(itemName) then
             return true

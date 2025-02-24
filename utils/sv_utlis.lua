@@ -4,6 +4,10 @@ elseif Config.Framework == 'esx' then
   ESX = exports['es_extended']:getSharedObject()
 end
 
+function debug(msg)
+    if Config.Debug then print('^3[DEBUG]^7', msg) end
+end
+
 ---@param src number # player source
 ---@param title string # noti title can be empty string for qb
 ---@param desc string # noti desc
@@ -22,73 +26,6 @@ function Notify(src, title, desc, type, duration)
   end
 end
 
-function TakeMoney(src, amount, reason)
-  if Config.Framework == 'qbx' then
-      if qbx:GetMoney(src, 'cash') >= amount then
-          qbx:RemoveMoney(src, 'cash', amount, reason)
-          return true
-      elseif qbx:GetMoney(src, 'bank') >= amount then
-          qbx:RemoveMoney(src, 'bank', amount, reason)
-          return true
-      else
-          return false
-      end
-  elseif Config.Framework == 'qb' then
-      local plr = qb.Functions.GetPlayer(src)
-      if not plr then return false end
-      if plr.Functions.GetMoney('cash') >= amount then
-          plr.Functions.RemoveMoney('cash', amount)
-          return true
-      elseif plr.Functions.GetMoney('bank') >= amount then
-          plr.Functions.RemoveMoney('bank', amount)
-          return true
-      else
-          return false
-      end
-  elseif Config.Framework == 'esx' then
-      local xPlayer = ESX.GetPlayerFromId(src)
-      if not xPlayer then return false end
-      if xPlayer.getMoney() >= amount then
-          xPlayer.removeMoney(amount)
-          return true
-      elseif xPlayer.getAccount('bank').money >= amount then
-          xPlayer.removeAccountMoney('bank', amount)
-          return true
-      else
-          return false
-      end
-  end
-end
-
-function AddMoney(src, account, amount, reason)
-  if Config.Framework == 'qbx' then
-      qbx:AddMoney(src, account, amount, reason)
-  elseif Config.Framework == 'qb' then
-      local plr = qb.Functions.GetPlayer(src)
-      if not plr then return false end
-      plr.Functions.AddMoney(account, amount)
-  elseif Config.Framework == 'esx' then
-      local xPlayer = ESX.GetPlayerFromId(src)
-      if not xPlayer then return false end
-      if account == 'cash' then
-          xPlayer.addMoney(amount)
-      elseif account == 'bank' then
-          xPlayer.addAccountMoney('bank', amount)
-      end
-  end
-end
-
-function RemoveItem(src, item, amount)
-  if Config.Inventory == 'ox' then
-      exports.ox_inventory:RemoveItem(src, item, amount or 1)
-  elseif Config.Inventory == 'qb' then
-      exports['qb-inventory']:RemoveItem(src, item, amount or 1)
-  elseif Config.Inventory == 'esx' then
-      local xPlayer = ESX.GetPlayerFromId(src)
-      if not xPlayer then return end
-      xPlayer.removeInventoryItem(item, amount or 1)
-  end
-end
 
 function AddItem(src, item, amount)
     local src = source
@@ -135,30 +72,44 @@ function HasItem(src, item, amount)
     return false
 end
 
+function Contains(table, value)
+    for _, v in pairs(table) do
+        if v == value then return true end
+    end
+    return false
+end
 
--- lib.callback.register('biq-scrapyard:server:IsPlayerHaveJob', function(source)
---     local playerJob
+function GetPlayerIdentifier(source)
+    if Config.Framework == 'qb'  then
+        return QBCore.Functions.GetPlayer(source).PlayerData.citizenid
+    elseif Config.Framework == 'qbox' then
+        return exports.qbx_core:GetPlayer(source).PlayerData.citizenid
+    elseif Config.Framework == 'esx' then
+        return ESX.GetPlayerFromId(source).getIdentifier()
+    else
+        debug('Config.Framework is not set correctly')
+        return
+    end
+end
 
---     if Config.Framework == 'qbox' then
---         local Player = exports.qbx_core:GetPlayer(source)
---         if Player then
---             playerJob = Player.PlayerData.job.name
---         end
-
---     elseif Config.Framework == 'qb' then 
---         local Player = QBCore.Functions.GetPlayer(source)
---         if Player then
---             playerJob = Player.PlayerData.job.name
---         end
-
---     elseif Config.Framework == 'esx' then
---         local xPlayer = ESX.GetPlayerFromId(source)
---         if xPlayer then
---             playerJob = xPlayer.job.name
---         end
---     end
-
---     return playerJob == Config.JobName
--- end)
-
-
+lib.callback.register('biq-shoprobbery:server:checkPoliceCount', function()
+    local policeCount = 0
+  
+    if Config.Framework == 'esx' then
+        local players = ESX.GetExtendedPlayers()
+        for _, player in pairs(players) do
+            if player.getJob() and Contains(Config.PoliceJobs, player.getJob().name) then
+                policeCount = policeCount + 1
+            end
+        end
+      elseif Config.Framework == 'qbox' or Config.Framework == 'qb' then
+        local player = exports.qbx_core:GetQBPlayers()
+        for _, player in pairs(player) do
+            if player.PlayerData.job and Contains(Config.PoliceJobs, player.PlayerData.job.name) then
+                policeCount = policeCount + 1
+            end
+        end
+      end
+    return policeCount
+  end)
+  

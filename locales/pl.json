@@ -1,3 +1,7 @@
 {
-  "cheaterDetected": "Wykryto cheatera! Nick: %s"
+  "cheaterDetected": "Prawdopodobnie wykryto cheatera ID: %s !",
+  "spam_event_detected": "Wykryto spam eventu, ID: %s !",
+  "not_enough_police": "W mieście jest za mało policji aby rozpocząć napad, musi być najmniej %s",
+  "not_have_required_item": "Nie masz wymaganego przedmiotu aby okraść to miejsce!",
+  "recently_robbed": "To miejsce zostało niedawno okradzione, musisz poczekać zanim zrobisz to ponownie!"
 }
