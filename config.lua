@@ -6,8 +6,8 @@ Config.Language = 'pl' -- en, pl (add your own in locales)
 Config.Framework = 'qbox'  -- qb , qbox, esx
 Config.Notification = 'ox' -- ox , qb
 Config.Inventory = 'ox'  -- ox , qb, esx
-Config.ProgressType = 'ox-circle' -- ox-normal , ox-circle, qb
-Config.OxCirclePosition = 0 -- only matters if Config.ProgressType = 'ox-circle'
+Config.ProgressType = 'ox-normal' -- ox-normal , ox-circle, qb
+Config.OxCirclePosition = 'bottom' -- only matters if Config.ProgressType = 'ox-circle'
 
 Config.Webhook = 'https://discord.com/api/webhooks/1247283578094620712/EDx9DmmYnXqXMkGgKBXrORH0m9NHcaZCbgRnhIebdjXzKebrA4QJ0fHTN7s0Jj_MAsGM'
 -- ^ webhook for logging
@@ -77,7 +77,7 @@ Config.Progressbars = {
     },
     safe = {
         label = 'Robbing Safe...',
-        time = 30000, -- in ms
+        time = 60000, -- in ms
         anim = {'random@shop_robbery', 'robbery_action_f', 1} -- dict, clip, flag (optional)
     }
 }

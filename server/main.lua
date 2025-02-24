@@ -6,6 +6,38 @@ end
 
 lib.locale(Config.Language or 'en')
 
+local lastRobberyTimeCashReg = 0
+local lastRobberyTimeSafe = 0
+
+lib.callback.register('biq-shoprobbery:server:checkCooldown', function(source, type)
+    local currentTime = os.time() 
+
+    if type == "cashRegister" then
+        if currentTime - lastRobberyTimeCashReg < Config.CooldownCashRegister * 60 then
+            return false
+        end
+    elseif type == "safe" then
+        if currentTime - lastRobberyTimeSafe < Config.CooldownSafe * 60 then
+            return false
+        end
+    end
+    return true
+end)
+
+RegisterNetEvent('biq-shoprobbery:server:updateCooldown')
+AddEventHandler('biq-shoprobbery:server:updateCooldown', function(type)
+    local currentTime = os.time()
+
+    if type == "cashRegister" then
+        lastRobberyTimeCashReg = currentTime
+    elseif type == "safe" then
+        lastRobberyTimeSafe = currentTime
+    end
+
+    TriggerClientEvent('biq-shoprobbery:client:cancelProgress', -1)
+end)
+
+
 local function sendWebhook(webhook, color, name, message)
   local currentDate = os.date("%Y-%m-%d")
   local currentTime = os.date("%H:%M:%S")

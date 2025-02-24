@@ -3,70 +3,89 @@ if Config.Framework == 'qb' then
 elseif Config.Framework == 'esx' then 
   ESX = exports['es_extended']:getSharedObject()
 end
-
-local lastRobberyTimeCashReg = -Config.CooldownCashRegister * 60 * 1000
-local lastRobberyTimeSafe = -Config.CooldownSafe * 60 * 1000
-
 lib.locale(Config.Language or 'en')
 
+local inProgress = false
+
+RegisterNetEvent('biq-shoprobbery:client:cancelProgress', function()
+  if inProgress then
+      lib.cancelProgress()
+      inProgress = false
+      Notify('', locale('robbery_cancelled'), 'error')
+  end
+end)
 
 local function RobCashRegister()
-    local currentTime = GetGameTimer()
+  local canRob = lib.callback.await('biq-shoprobbery:server:checkCooldown', false, 'cashRegister')
 
-    if tonumber(Config.RequiredPoliceCount) and Config.RequiredPoliceCount > 0 then
-        local policeCount = lib.callback.await('biq-shoprobbery:server:checkPoliceCount', false)
-        if policeCount < Config.RequiredPoliceCount then
-            Notify('', locale('not_enough_police', Config.RequiredPoliceCount), 'error')
-            return
-        end
-    end
-    
-  
-    if not HasRequiredItems('cashRegister') then
-      Notify('', locale('not_have_required_item'), 'error')
-      return
-    end
-  
-    if currentTime - lastRobberyTimeCashReg < Config.CooldownCashRegister * 60 * 1000 then
-        Notify('', locale('recently_robbed'), 'error')
-        return
-    end
-  
-    if Config.MinigameCashRegister and not Config.MinigameCashRegister() then return end
-    if not Progress(Config.Progressbars.cashRegister.time, Config.Progressbars.cashRegister.label, Config.Progressbars.cashRegister.anim) then return end
-
-    lastRobberyTimeCashReg = GetGameTimer()
-
-    TriggerServerEvent('biq-shoprobbery:server:giveRewardFromCashRegister')
-  end
-  
-
-local function RobSafe()
-  local currentTime = GetGameTimer()
-
-if Config.RequiredPoliceCount and Config.RequiredPoliceCount > 0 then
-    local policeCount = lib.callback.await('biq-shoprobbery:server:checkPoliceCount', false)
-    if policeCount < Config.RequiredPoliceCount then
-        Notify('', locale('not_enough_police', Config.RequiredPoliceCount), 'error')
-        return
-    end
-end
-
-  if not HasRequiredItems('safe') then
-    Notify('', locale('not_have_required_item'), 'error')
-    return
-  end
-
-  if currentTime - lastRobberyTimeSafe < Config.CooldownSafe * 60 * 1000 then
+  if not canRob then
       Notify('', locale('recently_robbed'), 'error')
       return
   end
 
+  if tonumber(Config.RequiredPoliceCount) and Config.RequiredPoliceCount > 0 then
+      local policeCount = lib.callback.await('biq-shoprobbery:server:checkPoliceCount', false)
+      if policeCount < Config.RequiredPoliceCount then
+          Notify('', locale('not_enough_police', Config.RequiredPoliceCount), 'error')
+          return
+      end
+  end
+
+  if not HasRequiredItems('cashRegister') then
+      Notify('', locale('not_have_required_item'), 'error')
+      return
+  end
+
+  if Config.MinigameCashRegister and not Config.MinigameCashRegister() then return end
+  
+  inProgress = true
+
+  if not Progress(Config.Progressbars.cashRegister.time, Config.Progressbars.cashRegister.label, Config.Progressbars.cashRegister.anim) then
+      inProgress = false
+      return
+  end
+
+  inProgress = false
+
+  Config.PoliceAlert()
+  TriggerServerEvent('biq-shoprobbery:server:updateCooldown', 'cashRegister')
+  TriggerServerEvent('biq-shoprobbery:server:giveRewardFromCashRegister')
+end
+
+local function RobSafe()
+  local canRob = lib.callback.await('biq-shoprobbery:server:checkCooldown', false, 'safe')
+
+  if not canRob then
+      Notify('', locale('recently_robbed'), 'error')
+      return
+  end
+
+  if Config.RequiredPoliceCount and Config.RequiredPoliceCount > 0 then
+      local policeCount = lib.callback.await('biq-shoprobbery:server:checkPoliceCount', false)
+      if policeCount < Config.RequiredPoliceCount then
+          Notify('', locale('not_enough_police', Config.RequiredPoliceCount), 'error')
+          return
+      end
+  end
+
+  if not HasRequiredItems('safe') then
+      Notify('', locale('not_have_required_item'), 'error')
+      return
+  end
+
   if Config.MinigameSafe and not Config.MinigameSafe() then return end
-  if not Progress(Config.Progressbars.safe.time, Config.Progressbars.safe.label, Config.Progressbars.safe.anim) then return end
 
-  lastRobberyTimeSafe = GetGameTimer()
+  inProgress = true
 
+  if not Progress(Config.Progressbars.safe.time, Config.Progressbars.safe.label, Config.Progressbars.safe.anim) then
+      inProgress = false
+      return
+  end
+
+  inProgress = false
+
+  Config.PoliceAlert()
+  TriggerServerEvent('biq-shoprobbery:server:updateCooldown', 'safe')
   TriggerServerEvent('biq-shoprobbery:server:giveRewardFromSafe')
 end
 
