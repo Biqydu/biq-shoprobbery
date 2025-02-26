@@ -1,6 +1,6 @@
 Config = {}
 
-Config.Debug = true
+Config.Debug = false
 
 Config.Language = 'en' -- en, pl (add your own in locales)
 Config.Framework = 'qbox'  -- qb , qbox, esx
@@ -9,26 +9,11 @@ Config.Inventory = 'ox'  -- ox , qb, esx
 Config.ProgressType = 'ox-normal' -- ox-normal , ox-circle, qb
 Config.OxCirclePosition = 'bottom' -- only matters if Config.ProgressType = 'ox-circle'
 
-Config.Webhook = 'https://discord.com/api/webhooks/1247283578094620712/EDx9DmmYnXqXMkGgKBXrORH0m9NHcaZCbgRnhIebdjXzKebrA4QJ0fHTN7s0Jj_MAsGM'
+Config.Webhook = ''
 -- ^ webhook for logging
 
 Config.CooldownCashRegister = 15 -- in minutes
 Config.CooldownSafe = 30 -- in minutes
-
-Config.Safes = {
-    vec3(28.25, -1338.87, 29.19), -- GROVE STREET
-    vec3(-43.37, -1748.38, 29.22),  -- BALLAS
-    vec3(378.14, 333.35, 103.27), -- VINEWOOD
-    vec3(1959.34, 3748.91, 32.14), -- SANDY SHORES
-    vec3(546.41, 2662.84, 42.06), -- HARMONY
-    vec3(1698.17, 4922.88, 42.06), -- GRAPESEED
-    vec3(1734.68, 6420.86, 35.04), -- PALETO BAY
-    vec3(2675.87, 3280.53, 55.24),  --  RIGHT HIGHWAY
-    vec3(-3250.07, 1004.55, 12.43), -- CHUMASH
-    vec3(-3047.85, 585.62, 7.91), -- BANHAM CANYON
-    vec3(1159.56, -314.06, 69.21), -- MIRROR PARK
-    vec3(-709.68, -904.03, 19.22), -- CHINA TOWN
-}
 
 Config.CashRegister = {
     vec3(24.4, -1344.87, 29.5),  -- GROVE STREET
@@ -45,13 +30,29 @@ Config.CashRegister = {
     vec3(-706.11, -913.53, 19.22), -- CHINA TOWN
 }
 
-Config.MinigameSafe = function() -- set to false to disable minigame
-    local success = lib.skillCheck({'medium', 'medium', 'medium'}, {'w', 'a', 's', 'd'})
-    return success
-end
+
+Config.Safes = {
+    vec3(28.25, -1338.87, 29.19), -- GROVE STREET
+    vec3(-43.37, -1748.38, 29.22),  -- BALLAS
+    vec3(378.14, 333.35, 103.27), -- VINEWOOD
+    vec3(1959.34, 3748.91, 32.14), -- SANDY SHORES
+    vec3(546.41, 2662.84, 42.06), -- HARMONY
+    vec3(1698.17, 4922.88, 42.06), -- GRAPESEED
+    vec3(1734.68, 6420.86, 35.04), -- PALETO BAY
+    vec3(2675.87, 3280.53, 55.24),  --  RIGHT HIGHWAY
+    vec3(-3250.07, 1004.55, 12.43), -- CHUMASH
+    vec3(-3047.85, 585.62, 7.91), -- BANHAM CANYON
+    vec3(1159.56, -314.06, 69.21), -- MIRROR PARK
+    vec3(-709.68, -904.03, 19.22), -- CHINA TOWN
+}
 
 Config.MinigameCashRegister = function() -- set to false to disable minigame
     local success = lib.skillCheck({'easy', 'medium', 'easy'}, {'w', 'a', 's', 'd'})
+    return success
+end
+
+Config.MinigameSafe = function() -- set to false to disable minigame
+    local success = lib.skillCheck({'medium', 'medium', 'medium'}, {'w', 'a', 's', 'd'})
     return success
 end
 
