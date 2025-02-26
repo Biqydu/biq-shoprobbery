@@ -25,4 +25,4 @@ The script requires the following dependencies:
 
 ## Preview
 
-- [preview](https://youtu.be/itTdpHV1Njg)
+- [preview](https://youtu.be/Cgjl3gMCs4k)
