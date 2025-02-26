@@ -23,4 +23,6 @@ The script requires the following dependencies:
 - [ox_target](https://github.com/overextended/ox_target)
 - [ox_lib](https://github.com/overextended/ox_lib)
 
-- [![Preview](https://img.youtube.com/vi/https://youtu.be/itTdpHV1Njg/hqdefault.jpg)](https://www.youtube.com/watch?v=https://youtu.be/itTdpHV1Njg)
+## Preview
+
+- [preview](https://youtu.be/itTdpHV1Njg)
