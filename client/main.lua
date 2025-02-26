@@ -150,8 +150,6 @@ local function CreateRobTargets()
   end
 end
 
-AddEventHandler('onResourceStart', function(resourceName)
-  if (GetCurrentResourceName() ~= resourceName) then return end
-  CreateRobTargets()
+CreateThread(function()
+    CreateRobTargets()
 end)
-
