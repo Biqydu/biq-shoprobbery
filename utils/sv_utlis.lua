@@ -92,6 +92,45 @@ function GetPlayerIdentifier(source)
     end
 end
 
+function GetPlayerGroup(source)
+    if Config.Framework == 'qb' then
+        return QBCore.Functions.GetPlayer(source).PlayerData.group
+    elseif Config.Framework == 'qbox' then
+        return exports.qbx_core:GetPlayer(source).PlayerData.group
+    elseif Config.Framework == 'esx' then
+        return ESX.GetPlayerFromId(source).getGroup()
+    else
+        debug('Config.Framework is not set correctly')
+        return
+    end
+end
+
+function sendWebhook(webhook, color, name, message)
+    local currentDate = os.date("%Y-%m-%d")
+    local currentTime = os.date("%H:%M:%S")
+    local embed = {
+          {
+              ["color"] = color,
+              ["title"] = "**".. name .."**",
+              ["description"] = message,
+              ["footer"] = {
+                  ["text"] = currentTime.." "..currentDate,
+              },
+          }
+      }
+    PerformHttpRequest(webhook, function(err, text, headers) end, 'POST', json.encode({username = name, embeds = embed}), { ['Content-Type'] = 'application/json' })
+  end
+
+function CheaterDetected(source)
+    sendWebhook(Config.Webhook, 7506394, 'biq-shoprobbery', locale('cheaterDetected', GetPlayerIdentifier(source)))
+    Config.CheaterDetected(source)
+end
+
+function SpamEvent(source)
+    sendWebhook(Config.Webhook, 7506394, 'biq-shoprobbery', locale('spam_event_detected', GetPlayerIdentifier(source)))
+    Config.SpamEventDetected(source)
+end
+
 lib.callback.register('biq-shoprobbery:server:checkPoliceCount', function()
     local policeCount = 0
   

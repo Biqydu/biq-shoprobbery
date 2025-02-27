@@ -37,33 +37,6 @@ AddEventHandler('biq-shoprobbery:server:updateCooldown', function(type)
     TriggerClientEvent('biq-shoprobbery:client:cancelProgress', -1)
 end)
 
-
-local function sendWebhook(webhook, color, name, message)
-  local currentDate = os.date("%Y-%m-%d")
-  local currentTime = os.date("%H:%M:%S")
-  local embed = {
-        {
-            ["color"] = color,
-            ["title"] = "**".. name .."**",
-            ["description"] = message,
-            ["footer"] = {
-                ["text"] = currentTime.." "..currentDate,
-            },
-        }
-    }
-  PerformHttpRequest(webhook, function(err, text, headers) end, 'POST', json.encode({username = name, embeds = embed}), { ['Content-Type'] = 'application/json' })
-end
-
-RegisterNetEvent('biq-shoprobbery:server:cheaterDetected', function(source)
-  sendWebhook(Config.Webhook, 7506394, 'biq-shoprobbery', locale('cheaterDetected', GetPlayerIdentifier(source)))
-  Config.CheaterDetected(source)
-end)
-
-RegisterNetEvent('biq-shoprobbery:server:spamEvent', function(source)
-  sendWebhook(Config.Webhook, 7506394, 'biq-shoprobbery', locale('spam_event_detected', GetPlayerIdentifier(source)))
-  Config.SpamEventDetected(source)
-end)
-
 local robberyCooldowns = {}
 
 RegisterNetEvent('biq-shoprobbery:server:giveRewardFromCashRegister', function()
@@ -73,7 +46,7 @@ RegisterNetEvent('biq-shoprobbery:server:giveRewardFromCashRegister', function()
   local isNearCashRegister = false
 
   if robberyCooldowns[src] and (os.time() - robberyCooldowns[src]) < 10 then
-    TriggerEvent('biq-shoprobbery:server:spamEvent', src)
+        SpamEvent(src)
     return
     end
     robberyCooldowns[src] = os.time()
@@ -89,7 +62,7 @@ RegisterNetEvent('biq-shoprobbery:server:giveRewardFromCashRegister', function()
   end
 
   if not isNearCashRegister then
-      TriggerEvent('biq-shoprobbery:server:cheaterDetected', src)
+        CheaterDetected(src)
   end
 end)
 
@@ -101,7 +74,7 @@ RegisterNetEvent('biq-shoprobbery:server:giveRewardFromSafe', function()
     local isNearSafe = false
 
     if robberyCooldowns[src] and (os.time() - robberyCooldowns[src]) < 10 then
-        TriggerEvent('biq-shoprobbery:server:spamEvent', src)
+        SpamEvent(src)
         return
     end
     robberyCooldowns[src] = os.time()
@@ -116,6 +89,6 @@ RegisterNetEvent('biq-shoprobbery:server:giveRewardFromSafe', function()
     end
 
     if not isNearSafe then
-        TriggerEvent('biq-shoprobbery:server:cheaterDetected', src)
+        CheaterDetected(src)
     end
 end)
