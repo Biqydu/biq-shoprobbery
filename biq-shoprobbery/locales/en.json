@@ -1,0 +1,7 @@
+{
+  "cheaterDetected": "Cheater detected probably ID: %s !",
+  "spam_event_detected": "Spam event detected ID: %s !",
+  "not_enough_police": "There are not enough police officers in the city! Must be at least %s",
+  "not_have_required_item": "You do not have the required item to rob!",
+  "recently_robbed": "This place was robbed recently you have to wait to do it again!"
+}
